@@ -12,6 +12,12 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.internal.operators.observable.ObservableFromArray
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.AsyncSubject
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
+import io.reactivex.subjects.ReplaySubject
+import io.reactivex.subjects.Subject
+import io.reactivex.subjects.UnicastSubject
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -327,5 +333,99 @@ class ExampleInstrumentedTest {
             }
         sleep(5000)
     }
-    
+
+
+
+    //Test asyncSubject
+    @Test
+    fun asyncSubjectdDemo() {
+        val subject: Subject<String> = AsyncSubject.create()
+
+        subject.subscribe(
+            { s -> println("Observer 1: $s") },
+            { e -> e.printStackTrace() }
+        ) { println("Observer 1 done!") }
+
+        subject.onNext("Alpha")
+        subject.onNext("Beta")
+        subject.onNext("Gamma")
+        subject.onComplete()
+
+        subject.subscribe(
+            { s -> println("Observer 2: $s") },
+            { e: Throwable -> e.printStackTrace() }
+        ) { println("Observer 2 done!") }
+    }
+
+
+    //Test behavioral subject
+    @Test
+    fun behaviorSubjectdDemo() {
+        val subject: Subject<String> = BehaviorSubject.create()
+
+        subject.subscribe { s -> println("Observer 1: $s") }
+
+        subject.onNext("Alpha")
+        subject.onNext("Beta")
+        subject.onNext("Gamma")
+
+        subject.subscribe { s -> println("Observer 2: $s") }
+    }
+
+
+    //test publish subject
+    @Test
+    fun publishSubjectDemo() {
+        val subject: Subject<String> = PublishSubject.create()
+
+        subject.subscribe { x -> println(x) }
+
+        subject.onNext("1")
+        subject.onNext("2")
+        subject.onNext("3")
+
+        subject.onComplete()
+    }
+
+
+    //test replaysubject
+    @Test
+    fun replaySubjectdDemo() {
+        val subject: Subject<String> = ReplaySubject.create()
+
+        subject.subscribe { s -> println("Observer 1: $s") }
+
+        subject.onNext("Alpha")
+        subject.onNext("Beta")
+        subject.onNext("Gamma")
+
+        subject.onComplete()
+        // Здесь подписываемся еще раз и получаем все переданные события
+        subject.subscribe { s -> println("Observer 2: $s") }
+    }
+
+
+    //test unicast
+
+    @Test
+    fun unicastcSubjectdDemo() {
+        val subject: Subject<String> = UnicastSubject.create()
+
+        Observable.interval(300, TimeUnit.MILLISECONDS)
+            .map { l: Long -> ((l + 1) * 300).toString() + " milliseconds" }
+            .subscribe(subject)
+
+        sleep(2000)
+        subject.subscribe { s -> println("Observer 1: $s") }
+        sleep(2000)
+    }
+
+    fun sleep(millis: Long) {
+        try {
+            Thread.sleep(millis)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+    }
+
 }
